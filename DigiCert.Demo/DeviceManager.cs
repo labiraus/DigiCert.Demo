@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DigiCert.Demo
 {
@@ -63,5 +60,15 @@ namespace DigiCert.Demo
         {
             MessageHandler?.Invoke(this, message);
         }
+    }
+
+    public interface IDeviceManager
+    {
+        event EventHandler<string> MessageHandler;
+        void Create(string commonName, StoreName storeName, string policy);
+        void Provision(string commonName, StoreName storeName);
+        void TestProvisioning(string commonName, StoreName storeName);
+        IoTHub GetHub(string commonName, StoreName storeName);
+        void Delete(string commonName, StoreName storeName);
     }
 }

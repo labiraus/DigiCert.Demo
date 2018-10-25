@@ -147,7 +147,7 @@ namespace DigiCert.Demo
                 });
 
                 watch.Stop();
-                Console.WriteLine("Time to upload file: {0}ms\n", watch.ElapsedMilliseconds);
+                handleMessage($"Time to upload file: {watch.ElapsedMilliseconds}ms\n");
             }
             catch (Exception e)
             {
@@ -221,14 +221,12 @@ namespace DigiCert.Demo
                         try
                         {
                             client.SendEventBatchAsync(messages).Wait();
-                            Console.WriteLine("Sending messages");
+                            handleMessage("Sending messages");
                             _errorCount = 0;
                         }
                         catch (UnauthorizedException e)
                         {
-                            Log.Error("Azure UnauthorizedException, refreshing SAS token", e);
-                            Console.WriteLine("Azure UnauthorizedException, refreshing SAS token");
-                            Console.WriteLine(e);
+                            handleMessage("Azure UnauthorizedException, refreshing SAS token\n"+e.ToString());
                             _errorCount = 0;
                             var task = tryRefreshTokenAsync();
                             task.Wait();
@@ -241,28 +239,24 @@ namespace DigiCert.Demo
                         {
                             if (!running)
                             {
-                                Log.Information("Azure error due to reboot", e);
-                                Console.WriteLine($"Azure error due to reboot: {e.Message}.");
+                                handleMessage($"Azure error due to reboot: {e.Message}.");
                                 return;
                             }
                             if (e.Message == "One or more errors occurred. (The operation completed successfully)")
                             {
-                                Log.Information("Ignoring Azure error", e);
-                                Console.WriteLine($"Ignoring Azure error: {e.Message}.");
+                                handleMessage($"Ignoring Azure error: {e.Message}.");
                                 _errorCount = 0;
                                 return;
                             }
                             _errorCount++;
-                            Log.Error("Azure Error", e);
-                            Console.WriteLine($"Azure error sending message: {e.Message}.");
+                            handleMessage($"Azure error sending message: {e.Message}.");
                             foreach (var message in messages)
                             {
                                 _pendingMessages.Enqueue(message);
                             }
                             if (_errorCount > 5)
                             {
-                                Log.Warning("Too many failed Azure operations, refreshing connection.");
-                                Console.WriteLine("Too many failed Azure operations, refreshing connection.", e);
+                                handleMessage("Too many failed Azure operations, refreshing connection.\n"+ e.ToString());
                                 var task = tryRefreshTokenAsync();
                                 task.Wait();
                                 if (!task.Result)
@@ -296,7 +290,7 @@ namespace DigiCert.Demo
             }
             catch (UnauthorizedException)
             {
-                Console.WriteLine("Azure UnauthorizedException, refreshing SAS token");
+                handleMessage("Azure UnauthorizedException, refreshing SAS token");
                 if (!await tryRefreshTokenAsync())
                 {
                     throw new UnauthorizedException("Failed to refresh Azure connection");
@@ -305,11 +299,11 @@ namespace DigiCert.Demo
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Azure error: {e.Message}.");
+                handleMessage($"Azure error: {e.Message}.");
                 _errorCount++;
                 if (_errorCount > 5)
                 {
-                    Console.WriteLine("Too many failed Azure operations, refreshing connection.");
+                    handleMessage("Too many failed Azure operations, refreshing connection.");
                     if (!await tryRefreshTokenAsync())
                     {
                         throw new Exception($"Failed to refresh Azure connection after error {e.Message}.", e);

@@ -17,7 +17,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace DigiCert.Demo
 {
-    class CertificateService : ICertificateService
+    public class CertificateService : ICertificateService
     {
         private readonly IConfigurationRoot _configuration;
         private readonly X509Certificate2 _ra;
@@ -102,5 +102,12 @@ namespace DigiCert.Demo
         {
             MessageHandler?.Invoke(this, message);
         }
+    }
+    public interface ICertificateService
+    {
+        event EventHandler<string> MessageHandler;
+        void Create(string commonName, StoreName storeName, string policy);
+        void Delete(string commonName, StoreName storeName);
+        void Delete(string commonName);
     }
 }

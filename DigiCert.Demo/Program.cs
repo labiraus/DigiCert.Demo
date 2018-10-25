@@ -1,10 +1,7 @@
-﻿using System;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Security.Cryptography.X509Certificates;
 
 namespace DigiCert.Demo

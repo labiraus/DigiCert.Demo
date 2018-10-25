@@ -11,29 +11,28 @@ using System.Threading.Tasks;
 
 namespace DigiCert.Demo
 {
-    class Provisioning : IProvisioning
+    public class Provisioning : IProvisioning
     {
         public event EventHandler<string> MessageHandler;
         private readonly string _globalDeviceEndpoint;
         private readonly string _idScope;
         private readonly string _iotHub;
 
-        public Provisioning(IConfigurationRoot configuration)
+        public Provisioning(IConfigurationRoot configuration) :
+            this(configuration.GetConnectionString("GlobalDeviceEndpoint"), configuration.GetConnectionString("IdScope"), configuration.GetConnectionString("IoTHub"))
         {
-            _globalDeviceEndpoint = configuration.GetConnectionString("GlobalDeviceEndpoint");
-            _idScope = configuration.GetConnectionString("IdScope");
-            _iotHub = configuration.GetConnectionString("IoTHub");
         }
 
-        private Provisioning(string globalDeviceEndpoint, string idScope)
+        private Provisioning(string globalDeviceEndpoint, string idScope, string iotHub)
         {
             _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
+            _iotHub = iotHub;
         }
 
-        public static Task<bool> ProvisionDevice(X509Certificate2 certificate, string globalDeviceEndpoint, string idScope)
+        public static Task<bool> ProvisionDevice(X509Certificate2 certificate, string globalDeviceEndpoint, string idScope, string iotHub)
         {
-            var provisioning = new Provisioning(globalDeviceEndpoint, idScope);
+            var provisioning = new Provisioning(globalDeviceEndpoint, idScope, iotHub);
             return provisioning.ProvisionDevice(certificate);
         }
 
@@ -108,5 +107,13 @@ namespace DigiCert.Demo
         {
             MessageHandler?.Invoke(this, message);
         }
+    }
+
+    public interface IProvisioning
+    {
+        event EventHandler<string> MessageHandler;
+        Task<bool> ProvisionDevice(X509Certificate2 certificate);
+        Task<bool> TestProvisioning(string name, X509Certificate2 certificate);
+        Task DeleteDevice(string name);
     }
 }
